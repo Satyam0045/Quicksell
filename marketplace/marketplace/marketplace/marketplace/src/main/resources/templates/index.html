@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <title>QuickSell</title>
+
+    <style>
+
+        body {
+
+            margin: 0;
+            font-family: Georgia, serif;
+
+            background:
+                linear-gradient(
+                    rgba(255,255,255,0.85),
+                    rgba(255,255,255,0.85)
+                ),
+
+                url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070");
+
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .navbar {
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #2d6a4f,
+                    #40916c
+                );
+
+            color: white;
+
+            padding: 18px 30px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .navbar h1 {
+
+            margin: 0;
+
+            font-size: 32px;
+
+            letter-spacing: 2px;
+
+            color: #fefae0;
+        }
+
+        .navbar a {
+
+            color: white;
+
+            text-decoration: none;
+
+            margin-left: 20px;
+
+            font-size: 18px;
+
+            font-weight: bold;
+
+            transition: 0.3s;
+        }
+
+        .navbar a:hover {
+
+            color: #d8f3dc;
+        }
+
+        .hero {
+
+            text-align: center;
+
+            padding: 50px 20px;
+        }
+
+        .hero h2 {
+
+            font-size: 42px;
+
+            color: #1b4332;
+
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+
+            font-size: 20px;
+
+            color: #344e41;
+        }
+
+        .container {
+
+            padding: 30px;
+        }
+
+        .section-title {
+
+            text-align: center;
+
+            color: #1b4332;
+
+            font-size: 34px;
+
+            margin-bottom: 30px;
+        }
+
+        .product-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                    repeat(auto-fit, minmax(280px, 1fr));
+
+            gap: 30px;
+        }
+
+        .product-card {
+
+            background:
+                rgba(255,255,255,0.95);
+
+            border-radius: 20px;
+
+            overflow: hidden;
+
+            box-shadow:
+                0 8px 20px rgba(0,0,0,0.15);
+
+            transition: 0.3s;
+
+            border:
+                3px solid #95d5b2;
+        }
+
+        .product-card:hover {
+
+            transform: translateY(-8px);
+        }
+
+        .product-image {
+
+            height: 200px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 70px;
+
+            color: white;
+        }
+
+        .product-content {
+
+            padding: 20px;
+        }
+
+        .product-card h3 {
+
+            margin-top: 0;
+
+            color: #1b4332;
+
+            font-size: 24px;
+        }
+
+        .product-card p {
+
+            color: #344e41;
+
+            line-height: 1.5;
+        }
+
+        .price {
+
+            color: #2d6a4f;
+
+            font-size: 26px;
+
+            font-weight: bold;
+
+            margin: 15px 0;
+        }
+
+        .tag {
+
+            display: inline-block;
+
+            background: #d8f3dc;
+
+            color: #1b4332;
+
+            padding: 6px 12px;
+
+            border-radius: 20px;
+
+            font-size: 14px;
+
+            margin-top: 10px;
+        }
+
+        .footer {
+
+            text-align: center;
+
+            padding: 25px;
+
+            margin-top: 40px;
+
+            background: #2d6a4f;
+
+            color: white;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="navbar">
+
+    <h1>🌿 QuickSell</h1>
+
+    <div id="nav-links">
+
+    </div>
+
+</div>
+
+<div class="hero">
+
+    <h2>
+        Buy & Sell with Nature's Elegance 🌱
+    </h2>
+
+    <p>
+        Discover category-themed products in a
+        beautiful artistic marketplace.
+    </p>
+
+</div>
+
+<div class="container">
+
+    <h2 class="section-title">
+        Featured Products
+    </h2>
+
+    <div id="product-list"
+         class="product-grid">
+
+    </div>
+
+</div>
+
+<div class="footer">
+
+    © 2026 QuickSell • Dynamic Marketplace Theme 🎨
+
+</div>
+
+<script>
+
+    function setupNavbar() {
+
+        const token =
+            localStorage.getItem("token");
+
+        const nav =
+            document.getElementById("nav-links");
+
+        if(token) {
+
+            nav.innerHTML = `
+
+                <a href="/">Home</a>
+
+                <a href="/add-product">
+                    Sell Product
+                </a>
+
+                <a href="#"
+                   onclick="logout()">
+                   Logout
+                </a>
+            `;
+
+        } else {
+
+            nav.innerHTML = `
+
+                <a href="/">Home</a>
+
+                <a href="/login">
+                    Login
+                </a>
+
+                <a href="/register">
+                    Register
+                </a>
+            `;
+        }
+    }
+
+    async function loadProducts() {
+
+        const token =
+            localStorage.getItem("token");
+
+        try {
+
+            const response =
+                await fetch(
+                    "http://localhost:8080/api/products",
+                    {
+
+                        headers: token ? {
+
+                            "Authorization":
+                                "Bearer " + token
+
+                        } : {}
+                    }
+                );
+
+            const products =
+                await response.json();
+
+            const productList =
+                document.getElementById("product-list");
+
+            productList.innerHTML = "";
+
+            if(products.length === 0) {
+
+                productList.innerHTML =
+
+                    "<h2>No Products Available</h2>";
+
+                return;
+            }
+
+            products.forEach(product => {
+
+                let emoji = "🛍️";
+
+                let gradient =
+                    "linear-gradient(45deg,#95d5b2,#d8f3dc)";
+
+                const category =
+                    product.category.toLowerCase();
+
+                // Electronics Theme
+                if(category.includes("electronic")) {
+
+                    emoji = "💻";
+
+                    gradient =
+                        "linear-gradient(45deg,#1e3c72,#2a5298)";
+                }
+
+                // Painting Theme
+                else if(category.includes("painting")) {
+
+                    emoji = "🎨";
+
+                    gradient =
+                        "linear-gradient(45deg,#ff9a9e,#fad0c4)";
+                }
+
+                // Fashion Theme
+                else if(category.includes("fashion")) {
+
+                    emoji = "👗";
+
+                    gradient =
+                        "linear-gradient(45deg,#c471f5,#fa71cd)";
+                }
+
+                // Furniture Theme
+                else if(category.includes("furniture")) {
+
+                    emoji = "🪵";
+
+                    gradient =
+                        "linear-gradient(45deg,#8b5e3c,#c19a6b)";
+                }
+
+                // Books Theme
+                else if(category.includes("book")) {
+
+                    emoji = "📚";
+
+                    gradient =
+                        "linear-gradient(45deg,#d9a7c7,#fffcdc)";
+                }
+
+                // Plants Theme
+                else if(category.includes("plant")) {
+
+                    emoji = "🌿";
+
+                    gradient =
+                        "linear-gradient(45deg,#56ab2f,#a8e063)";
+                }
+
+                // Vehicle Theme
+                else if(category.includes("vehicle")) {
+
+                    emoji = "🚗";
+
+                    gradient =
+                        "linear-gradient(45deg,#232526,#414345)";
+                }
+
+                // Sports Theme
+                else if(category.includes("sport")) {
+
+                    emoji = "⚽";
+
+                    gradient =
+                        "linear-gradient(45deg,#11998e,#38ef7d)";
+                }
+
+                productList.innerHTML += `
+
+                    <div class="product-card">
+
+                        <div class="product-image"
+
+                             style="
+                                background:${gradient};
+                             ">
+
+                            ${emoji}
+
+                        </div>
+
+                        <div class="product-content">
+
+                            <h3>
+                                ${product.title}
+                            </h3>
+
+                            <p>
+                                ${product.description}
+                            </p>
+
+                            <div class="price">
+                                ₹${product.price}
+                            </div>
+
+                            <div class="tag">
+                                ${product.category}
+                            </div>
+
+                            <p>
+                                📍 ${product.location}
+                            </p>
+
+                        </div>
+
+                    </div>
+                `;
+            });
+
+        } catch(error) {
+
+            console.log(error);
+        }
+    }
+
+    function logout() {
+
+        localStorage.removeItem("token");
+
+        alert("Logged Out");
+
+        window.location.href = "/";
+    }
+
+    setupNavbar();
+
+    loadProducts();
+
+</script>
+
+</body>
+</html>
